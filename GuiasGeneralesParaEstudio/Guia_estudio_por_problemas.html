@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guía de estudio por problemas · Manual vivo</title>
+<style>
+:root{--navy:#102c40;--ink:#193144;--muted:#4e6879;--teal:#086e69;--line:#d5e3e6;--bg:#edf3f5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Instrument Sans',system-ui,sans-serif}
+.wrap{width:min(1030px,calc(100% - 36px));margin:auto}header{background:var(--navy);color:#fff;padding:48px 0 38px;border-bottom:5px solid #79c7bb}header p{color:#c6eae3;max-width:700px}h1{font-size:clamp(2.1rem,6vw,3.8rem);line-height:1.06;letter-spacing:-.04em;margin:8px 0 15px}.eyebrow{font-size:.78rem;font-weight:750;letter-spacing:.13em;text-transform:uppercase}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:19px 0}a{color:var(--teal)}nav a,button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px;font:inherit;text-decoration:none;color:var(--teal)}button,summary{cursor:pointer}section{padding:clamp(17px,4vw,36px);background:#fff;border:1px solid var(--line);border-radius:12px;margin:0 0 18px;scroll-margin:14px}h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.2;margin:0 0 14px}h3{color:var(--teal);font-size:1.12rem;margin:20px 0 5px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px;padding:0;list-style:none}.grid a{display:block;border:1px solid var(--line);border-radius:8px;padding:12px;text-decoration:none;height:100%}.grid span{display:block;color:var(--muted);font-size:.92rem}.callout{background:#e9f6f2;border-left:4px solid var(--teal);padding:12px 15px;margin:16px 0}.table{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.94rem}th,td{text-align:left;vertical-align:top;padding:11px;border-bottom:1px solid var(--line)}th{background:#173e53;color:white}tbody tr:nth-child(even){background:#f4f8fa}dl{margin:0}dt{font-weight:750}dd{margin:3px 0 12px}details{border:1px solid var(--line);padding:12px 15px;margin:10px 0;border-radius:8px;scroll-margin-top:14px}summary{font-weight:750;color:var(--teal)}pre{white-space:pre-wrap;background:#ecf3f5;padding:15px;border-radius:7px}code{font-family:'IBM Plex Mono',Consolas,monospace;font-size:.94em}footer{padding:0 0 26px;color:var(--muted)}:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+@media print{body{background:white;font-size:10pt}header{padding:15px 0;background:white;color:var(--ink)}header p{color:var(--ink)}nav{display:none}section{border:0;padding:10px 0}h2,h3,summary{break-after:avoid}tr{break-inside:avoid}.wrap{width:100%}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><p class="eyebrow">Manual vivo de análisis de datos</p><h1>Qué leer cuando tienes un problema que resolver</h1><p>Guía de consulta para conectar cinco libros con tus cursos de Udemy, tus prácticas en VS Code y los análisis de auditoría del CEDIS.</p></div></header>
+<main class="wrap">
+<nav aria-label="Índice"><a href="#entrada">Empieza aquí</a><a href="#libros">Los libros</a><a href="#rutas">Rutas de práctica</a><a href="#sesion">Cómo estudiar</a><a href="#ficha">Ficha de estudio</a><button type="button" onclick="window.print()">Imprimir</button></nav>
+<section id="entrada">
+<h2>¿En qué parte te atoraste?</h2>
+<ul class="grid">
+<li><a href="#sql"><strong>Un JOIN multiplica mis filas</strong><span>SQL Server y conciliación de movimientos</span></a></li>
+<li><a href="#pandas"><strong>Tengo varios archivos y sus llaves difieren</strong><span>Limpieza y uniones con pandas</span></a></li>
+<li><a href="#cohortes"><strong>Quiero medir antigüedad de inventario</strong><span>Fechas, cortes y cohortes</span></a></li>
+<li><a href="#hipotesis"><strong>Dos tasas parecen diferentes</strong><span>Muestreo, incertidumbre y pruebas</span></a></li>
+<li><a href="#python"><strong>Mi script todavía depende de pasos manuales</strong><span>Funciones, archivos y errores</span></a></li>
+<li><a href="#regresion"><strong>Quiero estimar una tendencia</strong><span>Regresión y validación temporal</span></a></li>
+</ul>
+<p class="callout">Si hoy solo tienes una sesión, empieza con la ruta que corresponda a un pendiente real. Lee la sección que te ayude a resolverlo y cierra con una consulta, un script o una explicación que puedas repetir.</p>
+</section>
+<section id="libros"><h2>Cinco libros para consultar según el problema</h2>
+<div class="table"><table><thead><tr><th>Libro</th><th>Ábrelo cuando necesites</th><th>Dónde buscar</th></tr></thead><tbody>
+<tr><td><strong>Python para análisis de datos</strong><br>Wes McKinney · Anaya Multimedia / O’Reilly · 3.ª ed., actualización 2023</td><td>Preparar y resumir una base analítica.</td><td>Caps. 7–8 para limpieza y uniones, 10 para agregaciones y 11 para fechas. Consulta 4–5 cuando necesites reforzar NumPy, tipos o selección en pandas.</td></tr>
+<tr><td><strong>Estadística práctica para ciencia de datos con R y Python</strong><br>Peter Bruce, Andrew Bruce y Peter Gedeck · Marcombo · 2.ª ed.</td><td>Decidir qué comparar, con qué supuestos y cómo explicar la incertidumbre.</td><td>Cap. 1 para exploración, 2 para muestreo e intervalos, 3 para experimentos y contrastes, 4 para regresión. Practica con los ejemplos en Python.</td></tr>
+<tr><td><strong>Programación Transact con SQL Server 2016</strong><br>Manuel Torres Remón · Macro</td><td>Resolver una extracción, una unión o una agregación antes de llevar los datos a Python.</td><td>Busca consultas, combinación de tablas y agrupaciones por tema en tu ejemplar. Practica en AdventureWorks2019 y traslada la lógica a tu esquema de trabajo.</td></tr>
+<tr><td><strong>Teoría y problemas de probabilidad y estadística</strong><br>Murray R. Spiegel · McGraw-Hill, según tu registro</td><td>Entender de dónde sale un cálculo que ya aplicaste con Python.</td><td>Busca probabilidad, distribución binomial, muestreo, estimación, contrastes o regresión en tu índice. Resuelve un ejercicio pequeño y verifica el resultado con código.</td></tr>
+<tr><td><strong>Python para todos</strong><br>Charles R. Severance · editorial de tu ejemplar por confirmar</td><td>Convertir pasos repetidos en un script que puedas correr de nuevo.</td><td>Empieza por funciones, archivos o diccionarios según el obstáculo. Consulta las secciones de excepciones cuando necesites mensajes de error útiles.</td></tr>
+</tbody></table></div>
+<p>Para los títulos cuya edición exacta no está confirmada, la guía usa temas de búsqueda en el índice. Para incorporar otro libro, registra el título, el autor y un problema que podría ayudarte a resolver. Puedes completar la editorial cuando tengas el ejemplar a la mano.</p>
+</section>
+<section id="rutas"><h2>Rutas de práctica con tus proyectos</h2>
+<details id="sql" open><summary>1. Reconciliar una extracción SQL · CEDIS Gómez</summary>
+<p><strong>Consulta.</strong> Torres Remón para cruces y agregaciones. McKinney, caps. 8 y 10, si quieres repetir los controles en pandas.</p>
+<p><strong>Práctica.</strong> Toma un corte pequeño de <code>EXISTENCIASDET</code> y cruza el detalle con los encabezados usando la llave que corresponda al movimiento. Antes del cruce, escribe qué representa una fila en cada origen y qué cardinalidad esperas. Si hay más de un encabezado por <code>AUTONUMSUC</code>, perfila esos casos y busca el criterio operativo que resuelva la relación.</p>
+<p><strong>Comprueba.</strong> Guarda un cuadro antes y después con filas, llaves distintas, entradas, salidas y movimientos sin coincidencia. Explica cualquier diferencia antes de usar el agregado.</p>
+</details>
+<details id="pandas" open><summary>2. Normalizar y unir archivos · Caso de etiquetado Adidas</summary>
+<p><strong>Consulta.</strong> McKinney, caps. 7–8. Busca tipos, valores ausentes y validación de uniones.</p>
+<p><strong>Práctica.</strong> Usa un extracto de recibo, envíos y catálogo. Lee los códigos como texto desde la carga, conserva el valor original y crea una llave normalizada. Valida la cardinalidad esperada con <code>merge(validate=...)</code> y usa <code>indicator=True</code> para ubicar registros sin coincidencia. Distingue un código sin catálogo de un estilo o color que discrepa.</p>
+<p><strong>Comprueba.</strong> Entrega una tabla de excepciones rastreable a cada origen y concilia las unidades antes y después de unir.</p>
+</details>
+<details id="cohortes" open><summary>3. Medir permanencia · GOM y ADIC_SAMARIL</summary>
+<p><strong>Consulta.</strong> McKinney, caps. 11 y 10. Busca fechas, agrupación por periodos y agregaciones.</p>
+<p><strong>Práctica.</strong> Construye cortes semanales. En GOM usa el saldo al 23 de mayo como cohorte inicial y registra ingresos posteriores por semana. En ADIC_SAMARIL, compara códigos y unidades entre cortes para detectar rotación y reincorporaciones. Si careces de trazabilidad por lote, documenta el criterio de consumo de saldos que uses para estimar antigüedad.</p>
+<p><strong>Comprueba.</strong> Concilia saldo inicial + entradas − salidas ± ajustes contra el saldo final. Distingue continuidad de un código de permanencia de las mismas unidades. El saldo inicial puede contener mercancía anterior al primer corte.</p>
+</details>
+<details id="hipotesis" open><summary>4. Comparar tasas de error · Gómez y León</summary>
+<p><strong>Consulta.</strong> Bruce y colaboradores, caps. 1–3. Abre Spiegel si quieres practicar la distribución binomial o entender el cálculo de una aproximación normal.</p>
+<p><strong>Práctica.</strong> Retoma la demostración de la guía de Python y SQL. Escribe la unidad de análisis, el denominador, H₀, H₁ y el efecto mínimo operativo antes de ejecutar la prueba. Reproduce la Z bilateral, revisa los conteos esperados para chi cuadrado y luego prueba un escenario con pocos errores para discutir cuándo usar Fisher. Anota cómo cambiaría el análisis si se auditan los mismos envíos antes y después.</p>
+<p><strong>Comprueba.</strong> Redacta tres líneas con tasa por grupo, diferencia e intervalo, y la decisión que esos datos permiten tomar. Separa la decisión estadística de la operativa.</p>
+<p><a href="https://chatgpt.com/library?file_id=libfile_39aa42e194a48191b38cef0457b93d44&amp;account_id=personal">Abrir la guía de Python, SQL e hipótesis</a></p>
+</details>
+<details id="python" open><summary>5. Convertir un reporte repetido en un script</summary>
+<p><strong>Consulta.</strong> Severance, funciones y archivos. McKinney, cap. 6, para lectura y escritura de datos tabulares.</p>
+<p><strong>Práctica.</strong> Toma un reporte semanal y conviértelo en un script <code>.py</code> en VS Code. Recibe el periodo como parámetro, extrae la parte de validación a una función si la vas a reutilizar y escribe un archivo de salida con el corte en el nombre. Prueba un periodo válido, uno sin datos y un archivo con una columna faltante.</p>
+<p><strong>Comprueba.</strong> Registra qué se ejecutó, cuántas filas se procesaron y cómo se reportó cada error. Repite el mismo corte para verificar que los totales sean reproducibles.</p>
+</details>
+<details id="regresion" open><summary>6. Explicar una tendencia de existencias · Gómez</summary>
+<p><strong>Consulta.</strong> Bruce y colaboradores, cap. 4. Usa Spiegel para resolver un ejemplo de mínimos cuadrados y explicar cómo se obtiene R².</p>
+<p><strong>Práctica.</strong> Recupera los cierres mensuales observados de Gómez. Identifica los meses sin observación, ajusta una recta y grafica los residuos. Cuando tengas suficientes cortes, reserva los últimos meses para evaluar el pronóstico y compara el error con usar el último saldo observado como referencia.</p>
+<p><strong>Comprueba.</strong> Explica la pendiente en unidades por mes y reporta el error de pronóstico fuera de muestra cuando esté disponible. Documenta si hubo cambios operativos que puedan alterar la tendencia.</p>
+</details>
+</section>
+<section id="sesion"><h2>Una sesión de una hora en VS Code</h2>
+<ol>
+<li><strong>5 min · Elige una pregunta.</strong> Toma un pendiente real o una dificultad concreta de una lección de Udemy. Escribe qué resultado demostraría que avanzaste.</li>
+<li><strong>15 min · Lee y localiza un ejemplo.</strong> Consulta una sección del libro. Apunta el concepto y un supuesto que debas verificar con tus datos.</li>
+<li><strong>30 min · Haz dos ejecuciones.</strong> Reproduce el ejemplo con datos pequeños. Después, cierra el libro e intenta adaptarlo a un extracto de trabajo o a datos simulados.</li>
+<li><strong>10 min · Verifica y registra.</strong> Añade un control que pueda fallar, escribe qué pasó y guarda la consulta o el script. Si la misma regla reaparece en otro proyecto, incorpórala al manual.</li>
+</ol>
+<div class="callout"><strong>Cómo encaja Udemy.</strong> Si la lección muestra <code>groupby</code>, busca el cap. 10 de McKinney y construye un corte que concilie con SQL. Si muestra una prueba A/B, usa el cap. 3 de Bruce para revisar el diseño, la unidad de asignación y el efecto que medirías en una operación real.</div>
+<p>Al comienzo de tu siguiente sesión, dedica cinco minutos a reconstruir la solución de memoria. Si recuerdas el procedimiento, cambia el caso. Si te atoras, vuelve a leer el párrafo que explica ese paso y repítelo.</p>
+</section>
+<section id="ficha"><h2>Ficha para guardar junto a la práctica</h2>
+<pre><code>Pregunta del trabajo o tema de Udemy
+Libro, sección y página que consulté
+Qué intenté primero y dónde me atoré
+Ejemplo mínimo que pude reproducir
+Cómo lo adapté a mi caso
+Control que ejecuté y resultado
+Qué podría explicar o reconstruir sin ver el libro
+Ruta del script o enlace al commit</code></pre>
+<h3>Fuentes para ubicar las secciones</h3>
+<ul>
+<li><a href="https://www.anayamultimedia.es/libro/titulos-especiales/python-para-analisis-de-datos-wes-mckinney-9788441546837/">Anaya Multimedia · Índice de McKinney</a></li>
+<li><a href="https://biblioteca.uteq.edu.ec/cgi-bin/koha/opac-detail.pl?biblionumber=32748">UTEQ · Registro y contenidos de la segunda edición de Bruce, Bruce y Gedeck</a></li>
+<li><a href="https://editorialmacro.com/wp-content/uploads/2021/02/9786123045470.pdf">Editorial Macro · Ficha de Programación Transact con SQL Server 2016</a></li>
+</ul>
+</section>
+<footer>Guía complementaria del Manual vivo de análisis de datos · Noviembre de 2026</footer>
+</main>
+<script>
+function abrirRuta() {
+  const id = window.location.hash.slice(1);
+  const target = document.getElementById(id);
+  if (target && target.tagName === 'DETAILS') target.open = true;
+}
+window.addEventListener('hashchange', abrirRuta);
+abrirRuta();
+let cerradas = [];
+window.addEventListener('beforeprint', () => {
+  cerradas = Array.from(document.querySelectorAll('details:not([open])'));
+  cerradas.forEach(ruta => { ruta.open = true; });
+});
+window.addEventListener('afterprint', () => {
+  cerradas.forEach(ruta => { ruta.open = false; });
+});
+</script>
+</body>
+</html>

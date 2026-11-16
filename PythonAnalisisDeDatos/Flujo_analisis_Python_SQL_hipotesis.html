@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de análisis de datos y pruebas de hipótesis</title>
+<style>
+:root{color-scheme:light;--ink:#172e40;--muted:#496579;--teal:#087775;--line:#d4e0e5;--paper:#fff;--bg:#edf3f5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 'Instrument Sans',system-ui,sans-serif}
+header{background:#102c40;color:white;padding:52px 0 39px;border-bottom:5px solid #77c9be}.wrap{width:min(1050px,calc(100% - 38px));margin:auto}
+header p{max-width:680px;color:#ccede7;margin:12px 0}h1{font-size:clamp(2rem,5vw,3.6rem);line-height:1.08;max-width:790px;margin:12px 0;letter-spacing:-.035em}
+h2{font-size:clamp(1.45rem,3vw,2rem);line-height:1.22;margin:0 0 15px}h3{margin:25px 0 6px;color:var(--teal)}p,ul,ol{margin:10px 0 16px}
+.tag{font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;font-weight:750}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding:19px 0}a{color:#086c69}nav a,button{border:1px solid var(--line);border-radius:6px;background:#fff;padding:6px 11px;text-decoration:none;font:inherit;color:#086c69}button{cursor:pointer}
+section{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:clamp(18px,4vw,38px);margin-bottom:18px;scroll-margin-top:16px}
+.route{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));padding-left:22px;gap:10px 30px}
+.route li{padding:7px 8px;border-bottom:1px solid var(--line)}.route span{display:block;color:var(--muted);font-size:.92rem}
+.callout{padding:14px 17px;background:#e8f5f2;border-left:4px solid var(--teal);margin:17px 0}
+pre{background:#102c40;color:#e3f7f3;padding:16px;overflow:auto;border-radius:8px;font-size:.85rem;line-height:1.5}code{font-family:'IBM Plex Mono',Consolas,monospace}p code,td code{background:#edf3f5;padding:2px 4px;border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:.93rem}th,td{text-align:left;vertical-align:top;padding:10px;border-bottom:1px solid var(--line)}th{background:#173e53;color:white}tbody tr:nth-child(even){background:#f4f8fa}
+.table{overflow:auto}summary{cursor:pointer;color:var(--teal);font-weight:700}details{margin:12px 0;padding:10px 13px;border:1px solid var(--line);border-radius:7px}
+footer{color:var(--muted);padding:8px 0 32px}:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+@media print{body{background:white;font-size:10pt}header{padding:18px 0;background:#fff;color:#172e40}header p{color:#172e40}nav,button{display:none}section{padding:12px 0;border:0}h2,h3{break-after:avoid}tr{break-inside:avoid}pre{white-space:pre-wrap;background:#f0f3f5;color:#172e40}.wrap{width:100%}}
+</style></head><body>
+<header><div class="wrap"><p class="tag">Manual vivo de análisis de datos · Python / SQL Server</p>
+<h1>De la extracción SQL a la prueba de hipótesis</h1>
+<p>Guía de trabajo con pandas, NumPy y SciPy. Un caso de auditoría de expedición recorre el flujo completo con datos simulados y una conexión adaptable a SQL Server.</p></div></header>
+<main class="wrap">
+<nav aria-label="Índice"><a href="#ruta">Checklist</a><a href="#sql">Extracción</a><a href="#calidad">Limpieza</a><a href="#eda">Exploración</a><a href="#hipotesis">Hipótesis</a><a href="#pruebas">Selección de prueba</a><a href="#resultado">Resultado</a><a href="#plantilla">Plantilla</a><button type="button" onclick="window.print()">Imprimir</button></nav>
+<section id="ruta"><h2>Checklist para arrancar una investigación</h2>
+<ol class="route"><li><strong>Delimitar la decisión</strong><span>Pregunta operativa, población, periodo y unidad de análisis.</span></li>
+<li><strong>Extraer de SQL</strong><span>Consulta parametrizada y fuente identificada.</span></li>
+<li><strong>Limpiar y conciliar</strong><span>Llaves, tipos, nulos, denominadores y conteos contra origen.</span></li>
+<li><strong>Explorar</strong><span>Tasas, distribuciones, cobertura y posibles sesgos.</span></li>
+<li><strong>Formalizar H₀ y H₁</strong><span>Métrica, diseño, α y diferencia relevante.</span></li>
+<li><strong>Elegir la prueba</strong><span>Tipo de variable, independencia, grupos y supuestos.</span></li>
+<li><strong>Estimar y contrastar</strong><span>Tamaño del efecto, intervalo y valor p.</span></li>
+<li><strong>Comunicar y guardar</strong><span>Decisión, alcance y pasos para reproducir el resultado.</span></li></ol>
+<div class="callout"><strong>Pregunta del caso.</strong> ¿La proporción de envíos auditados con error de expedición difiere entre Gómez y León? La respuesta ayudará a decidir si conviene revisar en detalle el proceso con mayor tasa.</div>
+<p>Si estás preparando un análisis confirmatorio, fija la métrica, la hipótesis y el plan antes de ver el resultado por grupo. Si la hipótesis nace de los patrones del análisis preliminar, identifícala como exploratoria y compruébala con un corte independiente fijado de antemano.</p></section>
+
+<section id="sql"><h2>Extracción desde SQL Server</h2>
+<p><strong>Unidad:</strong> un envío auditado. <strong>Llave:</strong> CEDIS + identificador de envío. <strong>Denominador:</strong> envíos auditados con resultado confirmado en el periodo. Un envío con varios errores cuenta una vez. El ejemplo usa fecha de revisión. Si quieres medir la operación por fecha de expedición, cambia la fecha del corte y verifica si hay auditorías pendientes al cierre.</p>
+<p>En la base real, toma el universo auditado de la tabla de revisiones. Si los errores viven en otra tabla, agrega primero el detalle a nivel envío y cruza desde el universo auditado. Trata como <code>0</code> los casos que tienen revisión cerrada y confirmada sin error. Conserva los pendientes o resultados desconocidos como tales.</p>
+<pre><code>python -m pip install pandas numpy scipy sqlalchemy pyodbc</code></pre>
+<p>Con <code>USAR_DEMO = True</code> puedes ejecutar el caso en VS Code sin una base. Para conectar SQL Server, adapta la vista ilustrativa y sus campos, instala el controlador ODBC apropiado y configura <code>AUDITORIA_ODBC</code> fuera del código. En Windows con autenticación integrada, un ejemplo de formato es <code>DRIVER={ODBC Driver 18 for SQL Server};SERVER=SERVIDOR\INSTANCIA;DATABASE=BASE;Trusted_Connection=yes;Encrypt=yes;</code>. Usa la configuración y el certificado de tu servidor.</p>
+<pre><code class="python">import numpy as np
+import pandas as pd
+from scipy import stats
+
+USAR_DEMO = True
+inicio, fin = &quot;2026-09-01&quot;, &quot;2026-10-01&quot;
+
+if USAR_DEMO:
+    rng = np.random.default_rng(42)
+    grupos = []
+    for cedis, n, errores in [(&quot;GOMEZ&quot;, 1200, 48), (&quot;LEON&quot;, 1500, 30)]:
+        grupos.append(pd.DataFrame({
+            &quot;cedis&quot;: cedis,
+            &quot;id_envio&quot;: [f&quot;{cedis}-{i}&quot; for i in range(n)],
+            &quot;fecha&quot;: pd.Timestamp(inicio) + pd.to_timedelta(
+                rng.integers(0, 30, size=n), unit=&quot;D&quot;
+            ),
+            &quot;error&quot;: rng.permutation(np.repeat([1, 0], [errores, n-errores])),
+        }))
+    raw = pd.concat(grupos, ignore_index=True)
+else:
+    import os
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.engine import URL
+
+    motor = create_engine(URL.create(
+        &quot;mssql+pyodbc&quot;,
+        query={&quot;odbc_connect&quot;: os.environ[&quot;AUDITORIA_ODBC&quot;]}
+    ))
+    sql = text(&#x27;&#x27;&#x27;
+        SELECT cedis, id_envio, fecha_revision AS fecha,
+               error_confirmado AS error
+        FROM dbo.vw_envios_auditados
+        WHERE fecha_revision &gt;= :inicio AND fecha_revision &lt; :fin
+    &#x27;&#x27;&#x27;)
+    with motor.connect() as conexion:
+        raw = pd.read_sql_query(sql, conexion, params={&quot;inicio&quot;: inicio, &quot;fin&quot;: fin})
+    motor.dispose()</code></pre>
+<p>Filtra, une y agrega en SQL cuando el origen tenga millones de filas. Trae a pandas las columnas al nivel requerido. Guarda el corte con límite superior exclusivo y concilia contra SQL por CEDIS antes de seguir.</p></section>
+
+<section id="calidad"><h2>Limpieza y conciliación</h2>
+<p>Conserva los datos originales y trabaja sobre una copia. Mantén los identificadores como texto para preservar ceros iniciales. Si aparecen duplicados, revisa si vienen de un cruce uno a muchos o de auditorías repetidas y documenta la regla que decide qué registro representa al envío.</p>
+<pre><code class="python">df = raw.copy()
+for col in [&quot;cedis&quot;, &quot;id_envio&quot;]:
+    df[col] = df[col].astype(&quot;string&quot;).str.strip().replace(&quot;&quot;, pd.NA)
+df[&quot;cedis&quot;] = df[&quot;cedis&quot;].str.upper()
+df[&quot;fecha&quot;] = pd.to_datetime(df[&quot;fecha&quot;], errors=&quot;coerce&quot;)
+df[&quot;error&quot;] = pd.to_numeric(df[&quot;error&quot;], errors=&quot;coerce&quot;)
+
+clave = [&quot;cedis&quot;, &quot;id_envio&quot;]
+duplicado = df.duplicated(clave, keep=False)
+fecha_valida = df[&quot;fecha&quot;].ge(inicio) &amp; df[&quot;fecha&quot;].lt(fin)
+incidencia = (
+    df[clave].isna().any(axis=1) | duplicado | ~fecha_valida
+    | ~df[&quot;error&quot;].isin([0, 1])
+)
+print(pd.Series({
+    &quot;filas_sql&quot;: len(raw),
+    &quot;filas_con_llave_repetida&quot;: int(duplicado.sum()),
+    &quot;filas_con_incidencia&quot;: int(incidencia.sum()),
+}))
+if incidencia.any():
+    print(df.loc[incidencia].head(10))
+    raise ValueError(&quot;Corrige y concilia las incidencias antes de seguir.&quot;)
+df[&quot;error&quot;] = df[&quot;error&quot;].astype(&quot;int8&quot;)</code></pre>
+<p>Concilia filas, envíos únicos y errores por CEDIS con una agregación independiente en origen. Registra cuántos registros quedaron pendientes o fuera de alcance y por qué. Si se excluyen casos sin resultado confirmado, revisa si su proporción es distinta entre CEDIS. El script se detiene ante inconsistencias para que puedas corregirlas en su origen.</p></section>
+
+<section id="eda"><h2>Análisis exploratorio</h2>
+<p>Compara el número auditado, los errores y la tasa. Revisa la cobertura de auditoría por semana, turno, tipo de mercancía y criterio de selección cuando tengas esas columnas. Una auditoría dirigida a envíos de alto riesgo cambia a qué población se puede extrapolar el resultado.</p>
+<pre><code class="python">orden = [&quot;GOMEZ&quot;, &quot;LEON&quot;]
+base = df.loc[df[&quot;cedis&quot;].isin(orden)].copy()
+resumen = (
+    base.groupby(&quot;cedis&quot;)[&quot;error&quot;].agg(errores=&quot;sum&quot;, n=&quot;size&quot;)
+    .reindex(orden)
+)
+if resumen[&quot;n&quot;].isna().any():
+    raise ValueError(&quot;Se necesitan envíos auditados de ambos CEDIS.&quot;)
+resumen[&quot;tasa&quot;] = resumen[&quot;errores&quot;] / resumen[&quot;n&quot;]
+print(resumen)
+print(base.groupby([&quot;cedis&quot;, pd.Grouper(key=&quot;fecha&quot;, freq=&quot;W&quot;)])[&quot;error&quot;]
+      .agg(errores=&quot;sum&quot;, n=&quot;size&quot;))
+
+tabla = np.column_stack([
+    resumen[&quot;errores&quot;].to_numpy(),
+    (resumen[&quot;n&quot;] - resumen[&quot;errores&quot;]).to_numpy(),
+])
+print(pd.DataFrame(tabla, index=orden, columns=[&quot;error&quot;, &quot;sin_error&quot;]))</code></pre>
+<div class="table"><table><caption>Conteos simulados para practicar</caption><thead><tr><th>CEDIS</th><th>Auditados</th><th>Con error</th><th>Sin error</th><th>Tasa</th></tr></thead><tbody>
+<tr><td>Gómez</td><td>1,200</td><td>48</td><td>1,152</td><td>4.00%</td></tr><tr><td>León</td><td>1,500</td><td>30</td><td>1,470</td><td>2.00%</td></tr></tbody></table></div>
+<p>Si tienes el censo del periodo, la diferencia observada describe exactamente ese corte. Una prueba inferencial requiere definir qué proceso o población más amplia quieres estudiar y por qué el diseño permite inferir sobre ella.</p></section>
+
+<section id="hipotesis"><h2>Planteamiento del problema y las hipótesis</h2>
+<p>Define <em>p</em><sub>G</sub> y <em>p</em><sub>L</sub> como las probabilidades de error para envíos comparables bajo el esquema de auditoría de cada CEDIS. El resultado es binario y los grupos son distintos. Para el ejercicio asumimos observaciones independientes dentro de cada grupo y entre grupos.</p>
+<ul><li><strong>H₀</strong> · p<sub>G</sub> − p<sub>L</sub> = 0.</li><li><strong>H₁</strong> · p<sub>G</sub> − p<sub>L</sub> ≠ 0. Cualquiera de los CEDIS puede tener mayor tasa.</li>
+<li><strong>Plan del ejemplo</strong> · Prueba bilateral, α = 0.05 e intervalo al 95%. Usamos 1 punto porcentual como umbral operativo ilustrativo, equivalente a 10 errores adicionales por cada 1,000 auditados.</li></ul>
+<p>Para diseñar una auditoría nueva, fija el efecto mínimo, la tasa base esperada y la potencia objetivo antes de calcular el tamaño de muestra. Si solo quieres saber si una tasa supera un límite, plantea esa dirección antes de observar los resultados.</p>
+<div class="callout">Si los envíos comparten caja, lote, turno, ruta o semana, revisa cómo se generó la muestra. La independencia puede fallar aunque cada envío tenga llave única. Según el diseño, analiza al nivel del grupo, usa un modelo con errores agrupados o remuestrea grupos cuando haya suficientes grupos independientes.</div></section>
+
+<section id="pruebas"><h2>Cómo elegir la prueba estadística</h2>
+<div class="table"><table><thead><tr><th>Pregunta</th><th>Prueba y función</th><th>Qué revisar</th></tr></thead><tbody>
+<tr><td>¿La tasa de error supera una meta?</td><td>Binomial exacta · <code>stats.binomtest</code>. Z de una proporción si la aproximación normal es razonable.</td><td>Una observación binaria por unidad independiente. Para Z, revisa éxitos y fracasos esperados bajo la meta.</td></tr>
+<tr><td>¿Dos CEDIS tienen tasas distintas?</td><td>Z de dos proporciones. Fisher exacta · <code>stats.fisher_exact</code> en una tabla 2×2 con conteos escasos.</td><td>Grupos independientes y conteos de error y sin error. Para Z, revisa los esperados bajo H₀.</td></tr>
+<tr><td>¿El resultado de auditoría se asocia con el turno?</td><td>Chi cuadrado de independencia · <code>stats.chi2_contingency</code>.</td><td>Usa frecuencias absolutas y revisa las esperadas. Si hay celdas escasas, considera métodos exactos o simulación válidos para la tabla y el diseño.</td></tr>
+<tr><td>¿Cambió la condición conforme/no conforme en las mismas cajas?</td><td>McNemar · <code>statsmodels.stats.contingency_tables.mcnemar</code>.</td><td>Pares por caja, independientes entre sí. La prueba se basa en los pares que cambian. Statsmodels se instala aparte.</td></tr>
+<tr><td>¿Dos equipos tardan distinto en promedio?</td><td>t de Welch · <code>stats.ttest_ind(a, b, equal_var=False)</code>.</td><td>Tiempo numérico y grupos independientes. Revisa asimetría y extremos, especialmente con muestras pequeñas. Welch admite varianzas distintas.</td></tr>
+<tr><td>¿Cambió el tiempo en las mismas rutas?</td><td>t pareada · <code>stats.ttest_rel(antes, despues)</code>.</td><td>Alinea por ruta y revisa la distribución de las diferencias, especialmente con pocos pares. Comprueba independencia entre pares.</td></tr>
+<tr><td>¿Tres equipos tienen tiempos promedio distintos?</td><td>ANOVA de un factor o ANOVA de Welch según varianzas.</td><td>Grupos independientes. La prueba global indica si hay alguna diferencia. Localízala con comparaciones planeadas o ajustadas por multiplicidad.</td></tr>
+</tbody></table></div>
+<p>Si te interesa la mediana, un percentil o la forma de la distribución, define ese objetivo primero. Una prueba de rangos como Mann–Whitney estudia diferencias en el orden de las observaciones. Interpretarla como una diferencia de medianas requiere condiciones adicionales.</p>
+<p>Para varios turnos o rubros, considera un contraste global y ajusta las comparaciones posteriores con un método como Holm. Si necesitas ajustar por mezcla de mercancía, turno u otras variables, considera regresión logística para el resultado binario y revisa el diseño de muestreo.</p>
+</section>
+
+<section id="resultado"><h2>Prueba Z, chi cuadrado e interpretación</h2>
+<p>La diferencia se calcula como Gómez menos León. Para la prueba Z, estima una proporción combinada bajo H₀ y úsala en el error estándar. Para comunicar el efecto, estima un intervalo de Newcombe basado en los intervalos de Wilson de cada grupo.</p>
+<pre><code class="python">alpha = 0.05
+x1, x2 = resumen[&quot;errores&quot;].to_numpy()
+n1, n2 = resumen[&quot;n&quot;].to_numpy()
+p1, p2 = x1 / n1, x2 / n2
+delta = p1 - p2
+combinada = (x1 + x2) / (n1 + n2)
+esperados = np.outer(tabla.sum(axis=1), tabla.sum(axis=0)) / tabla.sum()
+if np.any(esperados &lt; 5):
+    raise ValueError(&quot;Revisa Fisher exacta para esta tabla 2×2.&quot;)
+
+error_estandar_h0 = np.sqrt(combinada * (1 - combinada) * (1/n1 + 1/n2))
+z = delta / error_estandar_h0
+p_valor = 2 * stats.norm.sf(abs(z))
+
+# Intervalo de Newcombe para la diferencia de proporciones independientes.
+ic1 = stats.binomtest(x1, n1).proportion_ci(1 - alpha, method=&quot;wilson&quot;)
+ic2 = stats.binomtest(x2, n2).proportion_ci(1 - alpha, method=&quot;wilson&quot;)
+lim_inf = delta - np.hypot(p1 - ic1.low, ic2.high - p2)
+lim_sup = delta + np.hypot(ic1.high - p1, p2 - ic2.low)
+print(f&quot;z={z:.3f}, p={p_valor:.4f}&quot;)
+print(f&quot;Diferencia={100*delta:.2f} pp, IC 95% [{100*lim_inf:.2f}, {100*lim_sup:.2f}]&quot;)</code></pre>
+<pre aria-label="Resultado de la demostración">z=3.083, p=0.0020
+Diferencia=2.00 pp, IC 95% [0.72, 3.40]</pre>
+<details open><summary>Cómo se relacionan Z y chi cuadrado en una tabla 2×2</summary>
+<p>Para la misma tabla y una prueba Z bilateral, el chi cuadrado de Pearson sin corrección de continuidad equivale a Z² y devuelve el mismo valor p. Son dos formas de contrastar la misma hipótesis con estos datos. Para este ejercicio usamos 5 como regla práctica de frecuencia esperada mínima. Si la tabla es escasa o las categorías carecen de variación, revisa si la prueba elegida resulta aplicable.</p>
+<pre><code class="python"># Comparación didáctica sobre los mismos conteos del ejemplo.
+chi2 = stats.chi2_contingency(tabla, correction=False)
+print(chi2.expected_freq)
+assert np.isclose(chi2.statistic, z**2)
+assert np.isclose(chi2.pvalue, p_valor)
+
+# Ejemplos de otras preguntas con los datos de demostración.
+# En Gómez, ¿la tasa difiere de la meta hipotética de 2%?
+print(stats.binomtest(x1, n1, p=0.02, alternative=&quot;two-sided&quot;))
+# Con grupos independientes y una tabla 2×2 de eventos escasos:
+print(stats.fisher_exact([[2, 38], [0, 45]], alternative=&quot;two-sided&quot;))</code></pre></details>
+<h3>Redacción para el informe</h3>
+<p>En el ejemplo, Gómez registró 48 errores en 1,200 envíos auditados (4.00%) y León, 30 en 1,500 (2.00%). La diferencia estimada fue de 2.00 puntos porcentuales. Al nivel del 5%, la prueba detectó una diferencia bajo los supuestos del ejercicio. Como el intervalo incluye diferencias por debajo de 1 punto porcentual, el resultado deja incertidumbre sobre si se supera el umbral operativo propuesto.</p>
+<p>El valor p mide qué tan extremo resulta el estadístico, o uno más extremo, si H₀ y los supuestos fueran ciertos. Si p es mayor que α, reporta evidencia insuficiente para detectar la diferencia. La comparación entre CEDIS es observacional. Para atribuir una mejora a un cambio de proceso, diseña una evaluación que permita descartar explicaciones como turno, selección de envíos o mezcla de mercancía.</p></section>
+
+<section id="plantilla"><h2>Plantilla para la siguiente auditoría</h2>
+<pre><code>Decisión que el análisis debe informar
+Pregunta y población objetivo
+Periodo y evento que define la fecha del corte
+Unidad de análisis, llave y denominador
+Fuente SQL, versión de la consulta y parámetros
+Reglas de limpieza, exclusiones y conciliación
+Métrica, H₀, H₁, α y efecto mínimo operativo
+Diseño, prueba, supuestos y tratamiento de grupos o pares
+Resultado por grupo, efecto, intervalo y valor p
+Conclusión operativa, alcance y siguiente acción</code></pre>
+<p>Guarda la consulta, el script, las versiones de dependencias y el resumen de validación junto con el resultado. Si usas Git, conserva ahí el código y las reglas de negocio y maneja la extracción y las credenciales según el acceso autorizado.</p>
+<h3>Referencias técnicas</h3>
+<ul><li>Frecuencias esperadas y corrección de continuidad. <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2_contingency.html">SciPy · Chi cuadrado de independencia</a></li>
+<li>Varianzas distintas en la comparación de medias. <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html">SciPy · Prueba t independiente</a></li>
+<li>Diferencias entre proporciones independientes e intervalo de Newcombe. <a href="https://www.statsmodels.org/stable/generated/statsmodels.stats.proportion.confint_proportions_2indep.html">Statsmodels · Intervalos para proporciones independientes</a></li></ul></section>
+<footer>Guía complementaria del Manual vivo de análisis de datos · Noviembre de 2026</footer>
+</main></body></html>
